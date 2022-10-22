@@ -194,7 +194,7 @@ list_countries = ['Afghanistan',
  'Zambia',
  'Zimbabwe']
 
-df_lat_long = pd.read_csv('/Users/ellenstickland/Documents/Git/UAV/countries/country_lat_long.csv')
+df_lat_long = pd.read_csv('countries/country_lat_long.csv')
 list_countries = [x for x in list_countries if x in df_lat_long['country'].tolist()]
 
 global current_score
@@ -211,7 +211,7 @@ round_count = 1
 ######################## FUNCTIONS #############################
 def imageGenerator(country):
     global pic
-    img = Image.open(f"Git/UAV/countries/{country}.png")
+    img = Image.open(f"countries/{country}.png")
     img = img.resize((100,100), Image.ANTIALIAS)
     pic = ImageTk.PhotoImage(img)
     global canvas
