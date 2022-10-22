@@ -9,10 +9,9 @@ from PIL import Image, ImageTk
 from math import radians, cos, sin, asin, sqrt
 import pandas as pd
 
-
-
 ##### CREATE ROOT #####
 root = Tk()
+root.geometry("300x500")
 
 ####################################################################
 
@@ -196,11 +195,19 @@ list_countries = ['Afghanistan',
  'Zimbabwe']
 
 df_lat_long = pd.read_csv('/Users/ellenstickland/Documents/Git/UAV/countries/country_lat_long.csv')
+list_countries = [x for x in list_countries if x in df_lat_long['country'].tolist()]
 
 global current_score
 current_score = 0
 
+global guess_count
+guess_count = 0
 
+global max_rounds
+max_rounds = 3
+
+global round_count
+round_count = 1
 ######################## FUNCTIONS #############################
 def imageGenerator(country):
     global pic
@@ -226,15 +233,19 @@ def search(event):
 def isCorrect(x):
     global current_score
     if x == country:
-        current_score +=1
+        current_score +=(5-(guess_count-1))
         scoreUpdate(current_score)
         return('Correct')
     else:
-        current_score -=1
-        scoreUpdate(current_score)
-        return('Try Again')
+        if guess_count==5:
+            return('Failed')
+        else:
+            return('Try Again')
 
 def myClick():
+    global guess_count
+    global round_count
+    guess_count +=1
     lat1, long1 = getLatLong(country)
     lat2, long2 = getLatLong(combo_box.get())
     distance = calculateDistance(lat1, lat2, long1, long2)
@@ -242,11 +253,14 @@ def myClick():
     result = isCorrect(combo_box.get())
     myLabel2 = Label(root, text=result)
     myLabel2.pack()
-    myLabel3 = Label(root, text=f'{combo_box.get()}: {round(distance)} kms {direction}')
+    myLabel3 = Label(root, text=f'{guess_count} {combo_box.get()}: {round(distance)} kms {direction}')
     myLabel3.pack()
-    if result == 'Correct':
-        # Button(root,text="New Game", command=clear([canvas])).pack()
-        Button(root,text="New Game", command=clear_frame).pack()
+    if (result == 'Correct') | (guess_count==5):
+        if round_count == max_rounds:
+            finish()
+        else: 
+            round_count +=1
+            Button(root,text="New Game", command=clear_frame).pack()
 
 def clear(widgets_to_clear):
     for widget in widgets_to_clear:
@@ -279,6 +293,11 @@ def score():
     global myLabel
     myLabel = Label(root, text=f"Score: {current_score}")
     myLabel.pack()
+
+def roundLabel():
+    # global roundLabel
+    roundLabel = Label(root, text=f"Round: {round_count}")
+    roundLabel.pack()
 
 def scoreUpdate(current_score):
     myLabel.config(text=f"Score: {current_score}")
@@ -313,20 +332,28 @@ def getLatLong(country):
 
 
 def calculateDirection(lat_a,lat_b, long_a,  long_b):
+    north = '\U00002B06'
+    north_west = '\U00002196'
+    north_east = '\U00002197'
+    south = '\U00002B07'
+    south_west = '\U00002199'
+    south_east = '\U00002198'
+    east = '\U000027A1'
+    west = '\U00002B05'
     if abs(long_a-long_b) > abs(lat_a-lat_b):
         if long_a > long_b:
             direction = '\u2B05'
-            direction = 'West'
+            direction = 'East'+east
         else:
             direction = '\u27A1'
-            direction = 'East'
+            direction = 'West'+west
     else:
         if lat_a > lat_b:
             direction = '\u2B06'
-            direction = 'North'
+            direction = 'North'+north
         elif lat_a < lat_b:
             direction = '\u2B07'
-            direction = 'South'
+            direction = 'South'+south
         else:
             direction=''
     return direction
@@ -336,34 +363,68 @@ def cheatButton():
     cheatButton.pack()
 
 def showAnswer():
-    answer = Label(root, text=f'{country}')
+    answer = Label(root, text=f'ANSWER: {country}')
     answer.pack()
-    
-######################## STATIC CONTENT #############################
 
 
+def guessCountReset():
+    global guess_count
+    guess_count=0
+
+def roundCountReset():
+    global round_count
+    round_count=0
 
 
-def allFuncs():
-    global country
-    country = random.choice(list_countries)
+def finish():
     appTitle()
-    score()
-
-    imageGenerator(country)
-
-    countryBox()
-
-    makeGuess()
-
-    cheatButton()
-
+    for widgets in root.winfo_children():
+        widgets.destroy()
+    final_score = Label(root, text=f'GAME OVER\nFINAL SCORE\n {current_score}/{max_rounds*5}')
+    final_score.pack()
     exit_button()
 
 
-allFuncs()
 
 
+def welcomeScreen():
+    gameTitle = Label(root, text=f'WELCOME TO WORLDLE \U0001F30D ')
+    gameTitle.pack()
+    roundRequestLabel = Label(root, text=f'How many rounds would you like?')
+    roundRequestLabel.pack()
+    global roundRequest
+    roundRequest = Entry(root)
+    roundRequest.pack()
+    game_combo_box = ttk.Combobox(root, value=['Country Outlines'])
+    game_combo_box.pack()
+  
+    startGame = Button(root,text="Start Game", command=updateRoundNumber)
+    startGame.pack()
 
+def updateRoundNumber():
+    global max_rounds
+    max_rounds = int(roundRequest.get())
+    clear_frame()
+
+######################## STATIC CONTENT #############################
+
+
+def allFuncs():
+    
+    print('max_rounds', max_rounds)
+    global country
+    country = random.choice(list_countries)
+    roundLabel()
+    guessCountReset()
+    appTitle()
+    score()
+    imageGenerator(country)
+    countryBox()
+    makeGuess()
+    cheatButton()
+    exit_button()
+
+
+welcomeScreen()
 
 root.mainloop()
