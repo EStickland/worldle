@@ -7,7 +7,7 @@ Inspiration from:
 💡 New York Times app Wordle.  
 💡 https://worldle.teuteuf.fr   
 
-App Current features:   
+Current app features:   
 ♻️ Choose the number of rounds to play   
 🇦🇶 Random country outline shown   
 🧐 Up to 5 guesses to make per round   
