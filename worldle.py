@@ -232,7 +232,7 @@ def search(event):
 
 def isCorrect(x):
     global current_score
-    if x == country:
+    if x.lower() == country.lower():
         current_score +=(5-(guess_count-1))
         scoreUpdate(current_score)
         return('Correct')
